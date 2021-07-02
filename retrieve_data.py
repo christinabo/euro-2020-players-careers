@@ -135,7 +135,7 @@ players = []
 for team in teams:
     for key, values in team['players'].items():
         for value in values:
-            time.sleep(random.randint(2, 5))
+            time.sleep(random.randint(3, 7))
             age_started_senior_career = None
             age_started_youth_career = None
             print(value)
@@ -170,20 +170,7 @@ for team in teams:
 
                 age = [int(s) for s in age_value.split() if s.isdigit()][0]
                 print(age)
-                youth_career = None
-                youth_career_index = table.index[table[0].str.lower().str.contains('youth career', na=False)].to_list()
-                print("youth_career_index list", youth_career_index)
-                if youth_career_index:
-                    print("table", table.iloc[youth_career_index[0]+1])
-                    youth_career = str(table.iloc[youth_career_index[0]+1][0])
-                    # youth_career = youth_career.replace('–', ' ')
 
-                    if not youth_career.isdigit():
-                        youth_career = youth_career.split('-')[0]
-                    print('youth', youth_career)
-                    # if youth_career and 'nan' not in youth_career:
-                    #     youth_career_start = int(youth_career)
-                    #     age_started_youth_career = age - (2021 - youth_career_start)
                 senior_career = None
                 try:
                     senior_career_index = table.index[
@@ -201,14 +188,34 @@ for team in teams:
                 except Exception:
                     pass
 
+                youth_career = None
+                had_youth_career = False
+                youth_career_index = table.index[table[0].str.lower().str.contains('youth career', na=False)].to_list()
+                print("youth_career_index list", youth_career_index)
+                if youth_career_index:
+                    had_youth_career = True
+                    print("table", table.iloc[youth_career_index[0]:senior_career_index])
+                    youth_career = str(table.iloc[youth_career_index[0] + 1][0])
+                    # youth_career = youth_career.replace('–', ' ')
+
+                    if not youth_career.isdigit():
+                        youth_career = youth_career.split('-')[0]
+
+                    print('youth', youth_career)
+                    if 'nan' in youth_career:
+                        youth_career_next_row = str(table.iloc[youth_career_index[0] + 2][0])
+                        if 'senior' not in youth_career_next_row.lower():
+                            youth_career = youth_career_next_row
+                        print('youth next row', youth_career)
                 player_data = {
                     'team': team['team'],
                     'name': value,
                     'age': age,
                     'senior_career': senior_career,
-                    'youth_career': youth_career
+                    'youth_career': youth_career,
+                    'had_youth_career': had_youth_career
                 }
                 players.append(player_data)
 
 players_df = pd.DataFrame(players)
-players_df.to_csv('Italy.csv', index=False)
+players_df.to_csv('data/Italy.csv', index=False)
